@@ -1,0 +1,28 @@
+﻿@model Folder.Models.ViewModels.FoldersViewModel
+
+<h2>Create Folder</h2>
+
+@using (Html.BeginForm())
+{
+
+    @if (Model.ParentFolderOptions != null)
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParrentFolderId, htmlAttributes: new { @class = "control-label" })
+            @Html.DropDownListFor(model => model.ParrentFolderId, Model.ParentFolderOptions, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.ParrentFolderId, "", new { @class = "text-danger" })
+        </div>
+    }
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FolderName, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(model => model.FolderName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.FolderName, "", new { @class = "text-danger" })
+    </div>
+
+
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary" })
+    </div>
+}
