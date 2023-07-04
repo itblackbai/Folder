@@ -1,0 +1,15 @@
+﻿<div id="folders-page">
+    <h2>Export JSON</h2>
+
+    <a href="@Url.Action("ExportFolders", "Folders")">Export Folders</a>
+
+    <h2>Import JSON</h2>
+
+    <form method="post" enctype="multipart/form-data" action="@Url.Action("ImportFolders", "Folders")">
+        <input type="file" name="file" />
+        <input type="submit" value="Import Folders" />
+    </form>
+
+   
+
+</div>

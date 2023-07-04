@@ -1,16 +1,21 @@
 ﻿@model Folder.Models.ViewModels.FoldersIndexViewModel
 
-
 <h2>"Folder" - @Model.MainFolder.FolderName</h2>
 
-<ul>
-    @foreach (var folder in Model.ChildFolders)
-    {
-     
-       @Html.ActionLink(folder.FolderName, "Index", new { id = folder.Id })
-       <br />
-    }
-</ul>
+@if (Model.ChildFolders.Any())
+{
+    <ul>
+        @foreach (var folder in Model.ChildFolders)
+        {
+            @Html.ActionLink(folder.FolderName, "Index", new { id = folder.Id })
+            <br />
+        }
+    </ul>
+}
+else
+{
+    <p>No folders found.</p>
+}
 
 @if (Model.MainFolder.ParrentFolderId != null)
 {
@@ -18,13 +23,3 @@
         <a asp-action="Index" asp-route-id="@Model.MainFolder.ParrentFolderId">Back to Parent Folder</a>
     </div>
 }
-
-
-@* Export folders *@
-<a href="@Url.Action("ExportFolders", "Folders")">Export Folders</a>
-
-@* Import folders (using a form) *@
-<form method="post" enctype="multipart/form-data" action="@Url.Action("ImportFolders", "Folders")">
-    <input type="file" name="file" />
-    <input type="submit" value="Import Folders" />
-</form>

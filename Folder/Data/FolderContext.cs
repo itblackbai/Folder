@@ -1,6 +1,7 @@
 ﻿using Folder.Models;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using static System.Net.WebRequestMethods;
 
 namespace Folder.Data
@@ -19,7 +20,9 @@ namespace Folder.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Folders>().Property(f => f.Id).ValueGeneratedNever();
+            modelBuilder.Entity<Folders>()
+           .Property(f => f.Id)
+           .ValueGeneratedOnAdd();
 
             // Seed data for Folders
             modelBuilder.Entity<Folders>().HasData(

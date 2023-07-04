@@ -25,14 +25,14 @@ namespace Folder.Controllers
         {
             if (id == null)
             {
-                // Якщо id не вказано, знаходимо головну папку (з тим ParrentFolderId, що дорівнює null).
+
                 var mainFolder = _context.Folders.SingleOrDefault(f => f.ParrentFolderId == null);
                 if (mainFolder == null)
                 {
                     return NotFound();
                 }
 
-                // Знаходимо дочірні папки для головної папки.
+
                 var childFolders = _context.Folders.Where(f => f.ParrentFolderId == mainFolder.Id).ToList();
 
                 var viewModel = new FoldersIndexViewModel
@@ -45,14 +45,14 @@ namespace Folder.Controllers
             }
             else
             {
-                // Якщо вказано id папки, знаходимо папку за цим id.
+
                 var selectedFolder = _context.Folders.SingleOrDefault(f => f.Id == id);
                 if (selectedFolder == null)
                 {
                     return NotFound();
                 }
 
-                // Знаходимо дочірні папки для вказаної папки.
+
                 var childFolders = _context.Folders.Where(f => f.ParrentFolderId == id).ToList();
 
                 var viewModel = new FoldersIndexViewModel
@@ -64,7 +64,10 @@ namespace Folder.Controllers
                 return View(viewModel);
             }
         }
-
+        public IActionResult ImportExport()
+        {
+            return View();
+        }
 
         public IActionResult CreateFolders()
         {
@@ -92,7 +95,7 @@ namespace Folder.Controllers
             {
                 var folder = new Folders
                 {
-
+                    
                     FolderName = viewModel.FolderName
                 };
 
@@ -114,7 +117,14 @@ namespace Folder.Controllers
         public async Task<IActionResult> ExportFolders()
         {
             var folders = await _context.Folders.ToListAsync();
-            var serializedFolders = JsonConvert.SerializeObject(folders);
+
+            var foldersWithoutId = folders.Select(f => new
+            {
+                f.FolderName,
+                f.ParrentFolderId
+            });
+
+            var serializedFolders = JsonConvert.SerializeObject(foldersWithoutId);
             var bytes = Encoding.UTF8.GetBytes(serializedFolders);
             return File(new MemoryStream(bytes), "application/json", "folders.json");
         }
@@ -122,36 +132,31 @@ namespace Folder.Controllers
         [HttpPost]
         public async Task<IActionResult> ImportFolders()
         {
-            // Get the uploaded JSON file
+
             var file = Request.Form.Files.FirstOrDefault();
             if (file == null || file.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            // Read the JSON content from the uploaded file
+
             using var streamReader = new StreamReader(file.OpenReadStream());
             var jsonContent = await streamReader.ReadToEndAsync();
 
-            // Deserialize the JSON content to a list of Folders without "Id" field
-            var foldersWithoutId = JsonConvert.DeserializeObject<List<Folders>>(jsonContent);
+            var foldersWithoutId = JsonConvert.DeserializeAnonymousType(jsonContent, new[] { new { FolderName = "", ParrentFolderId = (int?)null } });
 
             foreach (var folderWithoutId in foldersWithoutId)
             {
-                // Check if the folder with the given Id already exists in the database
-                var existingFolder = await _context.Folders.FindAsync(folderWithoutId.Id);
-                if (existingFolder != null)
+  
+                var existingFolder = await _context.Folders
+                    .Where(f => f.FolderName == folderWithoutId.FolderName && f.ParrentFolderId == folderWithoutId.ParrentFolderId)
+                    .FirstOrDefaultAsync();
+
+                if (existingFolder == null)
                 {
-                    // Update the existing folder with the new data from the JSON file
-                    existingFolder.FolderName = folderWithoutId.FolderName;
-                    existingFolder.ParrentFolderId = folderWithoutId.ParrentFolderId;
-                }
-                else
-                {
-                    // If the folder with the given Id does not exist, create a new folder
+                   
                     var newFolder = new Folders
                     {
-                        Id = folderWithoutId.Id,
                         FolderName = folderWithoutId.FolderName,
                         ParrentFolderId = folderWithoutId.ParrentFolderId
                     };
@@ -162,6 +167,43 @@ namespace Folder.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
+        }
+
+        public IActionResult ImportDirectory()
+        {
+            // Replace the path with the root directory path you want to import
+            string rootDirectoryPath = @"C:\ExampleRootDirectory";
+
+            var viewModel = new FoldersViewModel();
+            viewModel.ParentFolderOptions = GetDirectoryStructure(rootDirectoryPath, null);
+
+            return View(viewModel);
+        }
+
+        // Recursive method to retrieve the directory structure from the file system
+        private List<SelectListItem> GetDirectoryStructure(string directoryPath, string parentFolderName)
+        {
+            var parentFolders = new List<SelectListItem>();
+
+            // Get all subdirectories in the current directory
+            var subDirectories = Directory.GetDirectories(directoryPath);
+
+            // Add an option for the current directory
+            parentFolders.Add(new SelectListItem
+            {
+                Value = directoryPath,
+                Text = parentFolderName ?? "(Root Directory)"
+            });
+
+            // Recursively process subdirectories
+            foreach (var subDirectory in subDirectories)
+            {
+                var directoryName = new DirectoryInfo(subDirectory).Name;
+                var subFolders = GetDirectoryStructure(subDirectory, directoryName);
+                parentFolders.AddRange(subFolders);
+            }
+
+            return parentFolders;
         }
 
 

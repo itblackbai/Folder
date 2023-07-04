@@ -20,3 +20,37 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+#folders-page h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#folders-page a {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #337ab7;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+#folders-page form {
+    margin-top: 20px;
+}
+
+#folders-page input[type="file"] {
+    display: block;
+    margin-bottom: 10px;
+}
+
+#folders-page input[type="submit"] {
+    padding: 6px 12px;
+    background-color: #337ab7;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
