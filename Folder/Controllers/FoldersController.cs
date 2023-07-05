@@ -169,42 +169,9 @@ namespace Folder.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult ImportDirectory()
-        {
-            // Replace the path with the root directory path you want to import
-            string rootDirectoryPath = @"C:\ExampleRootDirectory";
+     
 
-            var viewModel = new FoldersViewModel();
-            viewModel.ParentFolderOptions = GetDirectoryStructure(rootDirectoryPath, null);
 
-            return View(viewModel);
-        }
-
-        // Recursive method to retrieve the directory structure from the file system
-        private List<SelectListItem> GetDirectoryStructure(string directoryPath, string parentFolderName)
-        {
-            var parentFolders = new List<SelectListItem>();
-
-            // Get all subdirectories in the current directory
-            var subDirectories = Directory.GetDirectories(directoryPath);
-
-            // Add an option for the current directory
-            parentFolders.Add(new SelectListItem
-            {
-                Value = directoryPath,
-                Text = parentFolderName ?? "(Root Directory)"
-            });
-
-            // Recursively process subdirectories
-            foreach (var subDirectory in subDirectories)
-            {
-                var directoryName = new DirectoryInfo(subDirectory).Name;
-                var subFolders = GetDirectoryStructure(subDirectory, directoryName);
-                parentFolders.AddRange(subFolders);
-            }
-
-            return parentFolders;
-        }
 
 
 
